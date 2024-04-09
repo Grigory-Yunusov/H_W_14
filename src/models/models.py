@@ -1,8 +1,9 @@
 # models.py
 from src.db.database import Base
-from sqlalchemy import Column, Integer, String, Date
+from sqlalchemy import Column, Integer, String, Date, func
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import ForeignKey
+from sqlalchemy.sql.sqltypes import DateTime
 
 # Database model
 class ContactDB(Base):
@@ -21,8 +22,12 @@ class ContactDB(Base):
 class UserDB(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)
-    email = Column(String(150), nullable=False, unique=True)
+    username = Column(String(50))
+    email = Column(String(250), nullable=False, unique=True)
+    created_at = Column('crated_at', DateTime, default=func.now())
     password = Column(String(255), nullable=False)
+    avatar = Column(String(255), nullable=True)
+    refresh_token = Column(String(255), nullable=True)
     # hashed_password = Column(String)
 
 
