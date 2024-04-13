@@ -3,7 +3,7 @@ import uvicorn
 from fastapi import FastAPI, Depends
 from src.routes import contacts
 from src.routes import user
-from src.auth.auth import get_current_user
+from src.auth.auth import auth_service
 from src.models.models import UserDB
 
 app = FastAPI()
@@ -16,7 +16,7 @@ async def start():
     return "Welcome to ContactsAPP!"
 
 @app.get("/secret")
-async def read_item(current_user: UserDB = Depends(get_current_user)):
+async def read_item(current_user: UserDB = Depends(auth_service.get_current_user)):
     return {"message": 'secret router', "owner": current_user.email}
 
 if __name__ == '__main__':
