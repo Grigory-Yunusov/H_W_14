@@ -1,5 +1,6 @@
 # src.auth.auth.py
 import redis
+import pickle
 from datetime import datetime, timedelta
 from typing import Optional
 from fastapi import Depends, HTTPException
@@ -77,10 +78,15 @@ class Auth:
                 raise credentials_exception
         except JWTError as e:
             raise credentials_exception
-
-        user = await repository_users.get_user_by_email(email, db)
+        user = self.r.get(f"user:{email}")
         if user is None:
-            raise credentials_exception
+            user = await repository_users.get_user_by_email(email, db)
+            if user is None:
+                raise credentials_exception
+            self.r.set(f"user:{email}", pickle.dumps(user))
+            self.r.expire(f"user:{email}", 900)
+        else:
+            user = pickle.loads(user)
         return user
     async def create_email_token(self, data: dict):
         to_encode = data.copy()
