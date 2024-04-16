@@ -1,6 +1,6 @@
 # models.py
 from src.db.database import Base
-from sqlalchemy import Column, Integer, String, Date, func
+from sqlalchemy import Column, Integer, String, Date, func, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import ForeignKey
 from sqlalchemy.sql.sqltypes import DateTime
@@ -28,6 +28,7 @@ class UserDB(Base):
     password = Column(String(255), nullable=False)
     avatar = Column(String(255), nullable=True)
     refresh_token = Column(String(255), nullable=True)
+    confirmed = Column(Boolean, default=False)
     # hashed_password = Column(String)
 
 

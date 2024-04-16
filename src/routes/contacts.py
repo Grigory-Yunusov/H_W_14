@@ -5,13 +5,14 @@ from  src.db.database import get_db
 from sqlalchemy.orm import Session
 from ..models.models import UserDB
 from src.auth.auth import auth_service
-
+from fastapi_limiter.depends import RateLimiter
 
 
 
 router = APIRouter(prefix="/contacts", tags=["contacts"])
 
-@router.post("/contacts/", response_model=ContactResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/contacts/", response_model=ContactResponse, status_code=status.HTTP_201_CREATED,
+             dependencies=[Depends(RateLimiter(times=2, seconds=5))])
 async def create_contact(contact: ContactCreate, db: Session = Depends(get_db), 
                     current_user: UserDB = Depends(auth_service.get_current_user)):
     db_contact = await repository_contacts.create_contact(contact, db, current_user)
