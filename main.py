@@ -8,9 +8,21 @@ from src.auth.auth import auth_service
 from src.models.models import UserDB
 from src.conf.config import settings
 from fastapi_limiter import FastAPILimiter
-
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+origins = [ 
+    "http://localhost:3000"
+    ]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(contacts.router)
 app.include_router(user.router)
