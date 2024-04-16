@@ -1,11 +1,12 @@
-
-from fastapi import APIRouter, HTTPException, Depends, status, Security, BackgroundTasks, Request
+#src.routes.user.py
+from fastapi import APIRouter, HTTPException, Depends, status, Security, BackgroundTasks, Request, UploadFile, File
 from fastapi.security import OAuth2PasswordRequestForm, HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
 from src.db.database import get_db
-from src.schemas.schemas import UserModel, UserResponse, TokenModel, RequestEmail
+from src.schemas.schemas import UserModel, UserResponse, TokenModel, RequestEmail, UserDb
 from src.repository import user as repository_users
+
 from src.auth.auth import auth_service
 from src.services.email import send_email
 
@@ -73,3 +74,11 @@ async def confirmed_email(token: str, db: Session = Depends(get_db)):
         return {"message": "Your email is already confirmed"}
     await repository_users.confirmed_email(email, db)
     return {"message": "Email confirmed"}
+
+@router.post("/avatar")
+async def update_avatar( file: UploadFile = File(...),
+                        current_user: UserDb = Depends(auth_service.get_current_user),
+                        db: Session = Depends(get_db),
+                    ):
+    user = await repository_users.update_avatar(file.filename, current_user.email, db)
+    return {"message": "Avatar updated successfully", "user": user}
