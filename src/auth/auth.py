@@ -1,4 +1,13 @@
 # src.auth.auth.py
+
+"""
+Authentication module.
+
+This module contains the Auth class, which is responsible for handling
+authentication-related operations such as password hashing, token creation,
+token decoding, and user retrieval from the database.
+"""
+
 import redis
 import pickle
 from datetime import datetime, timedelta
@@ -16,6 +25,12 @@ from src.conf.config import settings
 
 
 class Auth:
+    """
+    Authentication service class.
+
+    This class provides methods for password hashing, token creation,
+    token decoding, and user retrieval from the database.
+    """
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
     SECRET_KEY = settings.secret_key
     ALGORITHM = settings.algorithm
@@ -23,13 +38,40 @@ class Auth:
     r = redis.Redis(host=settings.redis_host, port=settings.redis_port, db=0)
 
     def verify_password(self, plain_password, hashed_password):
+        """
+        Verify a plain password against a hashed password.
+
+        :param plain_password: The plain password to verify.
+        :type plain_password: str
+        :param hashed_password: The hashed password to compare against.
+        :type hashed_password: str
+        :return: True if the passwords match, False otherwise.
+        :rtype: bool
+        """
         return self.pwd_context.verify(plain_password, hashed_password)
 
     def get_password_hash(self, password: str):
+        """
+        Hash a password.
+
+        :param password: The password to hash.
+        :type password: str
+        :return: The hashed password.
+        :rtype: str
+        """
         return self.pwd_context.hash(password)
 
-    # define a function to generate a new access token
     async def create_access_token(self, data: dict, expires_delta: Optional[float] = None):
+        """
+        Create a new access token.
+
+        :param data: The data to encode in the token.
+        :type data: dict
+        :param expires_delta: The number of seconds the token should expire after.
+        :type expires_delta: Optional[float]
+        :return: The encoded access token.
+        :rtype: str
+        """
         to_encode = data.copy()
         if expires_delta:
             expire = datetime.utcnow() + timedelta(seconds=expires_delta)
@@ -41,6 +83,16 @@ class Auth:
 
     # define a function to generate a new refresh token
     async def create_refresh_token(self, data: dict, expires_delta: Optional[float] = None):
+        """
+        Create a new refresh token.
+
+        :param data: The data to encode in the token.
+        :type data: dict
+        :param expires_delta: The number of seconds the token should expire after.
+        :type expires_delta: Optional[float]
+        :return: The encoded refresh token.
+        :rtype: str
+        """
         to_encode = data.copy()
         if expires_delta:
             expire = datetime.utcnow() + timedelta(seconds=expires_delta)
@@ -51,6 +103,15 @@ class Auth:
         return encoded_refresh_token
 
     async def decode_refresh_token(self, refresh_token: str):
+        """
+        Decode a refresh token.
+
+        :param refresh_token: The refresh token to decode.
+        :type refresh_token: str
+        :return: The email contained in the refresh token.
+        :rtype: str
+        :raises HTTPException: If the token is invalid or has an invalid scope.
+        """
         try:
             payload = jwt.decode(refresh_token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
             if payload['scope'] == 'refresh_token':
@@ -61,6 +122,17 @@ class Auth:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Could not validate credentials')
 
     async def get_current_user(self, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+        """
+        Retrieve the current user from the database using a JWT token.
+
+        :param token: The JWT token.
+        :type token: str
+        :param db: The database session.
+        :type db: Session
+        :return: The current user.
+        :rtype: UserDB
+        :raises HTTPException: If the token is invalid or has an invalid scope.
+        """
         credentials_exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
@@ -89,6 +161,14 @@ class Auth:
             user = pickle.loads(user)
         return user
     async def create_email_token(self, data: dict):
+        """
+        Create a new email token.
+
+        :param data: The data to encode in the token.
+        :type data: dict
+        :return: The encoded email token.
+        :rtype: str
+        """
         to_encode = data.copy()
         expire = datetime.utcnow() + timedelta(days=7)
         to_encode.update({"iat": datetime.utcnow(), "exp": expire})
@@ -96,6 +176,15 @@ class Auth:
         return token
     
     async def get_email_from_token(self, token: str):
+        """
+        Retrieve the email from a JWT token.
+
+        :param token: The JWT token.
+        :type token: str
+        :return: The email contained in the token.
+        :rtype: str
+        :raises HTTPException: If the token is invalid.
+        """
         try:
             payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
             email = payload["sub"]

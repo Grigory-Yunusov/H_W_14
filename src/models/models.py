@@ -1,4 +1,11 @@
 # models.py
+
+"""
+Database Models Module.
+
+This module contains the SQLAlchemy models for the database tables.
+"""
+
 from src.db.database import Base
 from sqlalchemy import Column, Integer, String, Date, func, Boolean
 from sqlalchemy.orm import relationship
@@ -7,6 +14,21 @@ from sqlalchemy.sql.sqltypes import DateTime
 
 # Database model
 class ContactDB(Base):
+    """
+    ContactDB model class.
+
+    This class represents the 'contacts' table in the database. It contains the following columns:
+
+    - id: The primary key for the contact.
+    - first_name: The first name of the contact.
+    - last_name: The last name of the contact.
+    - email: The email of the contact.
+    - phone_number: The phone number of the contact.
+    - birthday: The birthday of the contact.
+    - additional_data: Additional data about the contact.
+    - user_id: The foreign key linking the contact to a user.
+    - user: The relationship to the UserDB model.
+    """
     __tablename__ = "contacts"
     id = Column(Integer, primary_key=True, index=True)
     first_name = Column(String)
@@ -20,6 +42,20 @@ class ContactDB(Base):
 
 
 class UserDB(Base):
+    """
+    UserDB model class.
+
+    This class represents the 'users' table in the database. It contains the following columns:
+
+    - id: The primary key for the user.
+    - username: The username of the user.
+    - email: The email of the user.
+    - created_at: The date and time the user was created.
+    - password: The hashed password of the user.
+    - avatar: The URL of the user's avatar.
+    - refresh_token: The refresh token for the user.
+    - confirmed: A boolean indicating whether the user's email has been confirmed.
+    """
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)
     username = Column(String(50))

@@ -1,4 +1,12 @@
 #src.services.email.py
+
+"""
+Email Service Module.
+
+This module contains the configuration for the email service and the function
+to send an email with a verification token.
+"""
+
 from pathlib import Path
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
 from fastapi_mail.errors import ConnectionErrors
@@ -6,7 +14,7 @@ from pydantic import EmailStr
 from src.auth.auth import auth_service
 from src.conf.config import settings
 
-
+# Email service configuration
 conf = ConnectionConfig(
     MAIL_USERNAME=settings.mail_username,
     MAIL_PASSWORD=settings.mail_password,
@@ -23,6 +31,17 @@ conf = ConnectionConfig(
 
 
 async def send_email(email: EmailStr, username: str, host: str):
+    """
+    Send an email with a verification token to the specified email address.
+
+    :param email: The email address to send the verification token to.
+    :type email: EmailStr
+    :param username: The username associated with the email address.
+    :type username: str
+    :param host: The host URL for the application.
+    :type host: str
+    :raises ConnectionErrors: If there is an error connecting to the email server.
+    """
     try:
         token_verification = auth_service.create_email_token({"sub": email})
         message = MessageSchema(
@@ -32,7 +51,10 @@ async def send_email(email: EmailStr, username: str, host: str):
             subtype=MessageType.html
         )
 
+        # Initialize FastMail with the configuration
         fm = FastMail(conf)
+        
+        # Send the email message using the defined template
         await fm.send_message(message, template_name="email_template.html")
     except ConnectionErrors as err:
         print(err)
