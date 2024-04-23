@@ -1,4 +1,6 @@
 #src.routes.user.py
+import cloudinary
+import cloudinary.uploader
 from fastapi import APIRouter, HTTPException, Depends, status, Security, BackgroundTasks, Request, UploadFile, File
 from fastapi.security import OAuth2PasswordRequestForm, HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
@@ -6,9 +8,10 @@ from sqlalchemy.orm import Session
 from src.db.database import get_db
 from src.schemas.schemas import UserModel, UserResponse, TokenModel, RequestEmail, UserDb
 from src.repository import user as repository_users
-
+from src.conf.config import settings
 from src.auth.auth import auth_service
 from src.services.email import send_email
+from src.models.models import UserDB
 
 router = APIRouter(prefix='/auth', tags=["auth"])
 security = HTTPBearer()
@@ -80,5 +83,26 @@ async def update_avatar( file: UploadFile = File(...),
                         current_user: UserDb = Depends(auth_service.get_current_user),
                         db: Session = Depends(get_db),
                     ):
-    user = await repository_users.update_avatar(file.filename, current_user.email, db)
+    user = await repository_users.update_avatar( current_user.email, file.filename, db)
     return {"message": "Avatar updated successfully", "user": user}
+
+@router.get("/me/", response_model=UserDb)
+async def read_users_me(current_user: UserDB = Depends(auth_service.get_current_user)):
+    return current_user
+
+
+@router.patch('/avatar', response_model=UserDb)
+async def update_avatar_user(file: UploadFile = File(), current_user: UserDB = Depends(auth_service.get_current_user),
+                             db: Session = Depends(get_db)):
+    cloudinary.config(
+        cloud_name=settings.cloudinary_name,
+        api_key=settings.cloudinary_api_key,
+        api_secret=settings.cloudinary_api_secret,
+        secure=True
+    )
+
+    r = cloudinary.uploader.upload(file.file, public_id=f'ContactsApp/{current_user.username}', overwrite=True)
+    src_url = cloudinary.CloudinaryImage(f'ContactsApp/{current_user.username}')\
+                        .build_url(width=250, height=250, crop='fill', version=r.get('version'))
+    user = await repository_users.update_avatar(current_user.email, src_url, db)
+    return user

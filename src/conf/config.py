@@ -16,6 +16,9 @@ class Settings(BaseSettings):
     postgres_user: str 
     postgres_password: str 
     postgres_port: int = 5432 
+    cloudinary_name: str
+    cloudinary_api_key: str
+    cloudinary_api_secret: str
 
     class Config:
         env_file = ".env"

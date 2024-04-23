@@ -1,5 +1,5 @@
 # main.py
-import redis
+import redis.asyncio as redis
 import uvicorn
 from fastapi import FastAPI, Depends
 from src.routes import contacts

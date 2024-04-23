@@ -34,8 +34,16 @@ async def confirmed_email(email: str, db: Session) -> None:
     db.commit()
 
 async def update_avatar(email: str, avatar_path: str, db: Session) -> UserDB:
+    print(email)
     user = db.query(UserDB).filter(UserDB.email == email).first()
+    print(user)
     user.avatar = avatar_path
     db.commit()
     db.refresh(user)
+    return user
+
+async def update_avatar(email, url: str, db: Session) -> UserDB:
+    user = await get_user_by_email(email, db)
+    user.avatar = url
+    db.commit()
     return user
