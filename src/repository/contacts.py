@@ -3,7 +3,7 @@ from ..models.models import ContactDB, UserDB
 from sqlalchemy.orm import Session
 from src.schemas.schemas import ContactCreate
 from sqlalchemy import or_, and_
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 
 async def create_contact(contact: ContactCreate, db: Session, user: UserDB):
@@ -19,7 +19,7 @@ async def create_contact(contact: ContactCreate, db: Session, user: UserDB):
     :return: The newly created contact.
     :rtype: ContactDB
     """
-    db_contact = ContactDB(**contact.dict(), user_id=user.id)
+    db_contact = ContactDB(**contact.model_dump(), user_id=user.id)
     db.add(db_contact)
     db.commit()
     db.refresh(db_contact)
@@ -75,7 +75,7 @@ async def update_contact(db: Session, contact, db_contact, contact_id: int, user
     """
     db_contact = db.query(ContactDB).filter(and_(ContactDB.id == contact_id, ContactDB.user_id == user.id)).first()
     if db_contact:
-        for key, value in contact.dict().items():
+        for key, value in contact.model_dump().items():
             setattr(db_contact, key, value)
         db.commit()
         db.refresh(db_contact)
@@ -144,6 +144,6 @@ async def get_upcoming_birthdays(db: Session, user: UserDB):
     contacts_list = []
     for contact in contacts:
         contact_birthday = contact.birthday.replace(year=today.year)
-        if today <= contact_birthday <= next_week:
+        if today <= contact_birthday.date() <= next_week:
             contacts_list.append(contact)
     return contacts_list
