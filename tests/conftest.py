@@ -1,11 +1,16 @@
 import pytest
+import os
+import sys
+sys.path.append(os.path.abspath('.'))
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from src.db.database import get_db
 from main import app
-from ..src.models.models import Base
+from src.models.models import Base
+
+
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
 

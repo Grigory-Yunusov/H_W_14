@@ -37,23 +37,23 @@ class Settings(BaseSettings):
 
     The settings are loaded from a .env file located in the root of the project.
     """
-    sqlalchemy_database_url: str
-    secret_key: str
-    algorithm: str
-    mail_username: str
-    mail_password: str
-    mail_from: str
-    mail_port: int
-    mail_server: str
-    redis_host: str 
-    redis_port: int 
-    postgres_db: str 
-    postgres_user: str 
-    postgres_password: str 
+    sqlalchemy_database_url: str="postgresql+psycopg2://POSTGRES_USER:POSTGRES_PASSWORD@localhost:5432/POSTGRES_DB"
+    secret_key: str="test"
+    algorithm: str="test"
+    mail_username: str="test"
+    mail_password: str="test"
+    mail_from: str="test"
+    mail_port: int=1
+    mail_server: str="test"
+    redis_host: str ="test"
+    redis_port: int=1
+    postgres_db: str ="test"
+    postgres_user: str ="test"
+    postgres_password: str ="test"
     postgres_port: int = 5432 
-    cloudinary_name: str
-    cloudinary_api_key: str
-    cloudinary_api_secret: str
+    cloudinary_name: str="test"
+    cloudinary_api_key: str="test"
+    cloudinary_api_secret: str="test"
 
     class Config:
         """
